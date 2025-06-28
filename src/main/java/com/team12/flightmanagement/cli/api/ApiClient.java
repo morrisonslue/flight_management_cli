@@ -1,30 +1,68 @@
 package com.team12.flightmanagement.cli.api;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.team12.flightmanagement.cli.model.City;
+import com.team12.flightmanagement.cli.model.Airport;
+import com.team12.flightmanagement.cli.model.Passenger;
+import com.team12.flightmanagement.cli.model.Aircraft;
+import com.team12.flightmanagement.cli.util.JsonUtil;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://localhost:8080";
+    private final String apiUrl;
 
-    public static String get(String path) throws Exception {
-        URL url = new URL(BASE_URL + path);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    public ApiClient(String apiUrl) {
+        this.apiUrl = apiUrl;
+    }
+
+    protected String get(String path) throws IOException {
+        java.net.URL url = new java.net.URL(apiUrl + path);
+        java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/json");
-        int status = con.getResponseCode();
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                status > 299 ? con.getErrorStream() : con.getInputStream()
-        ));
-        String inputLine;
-        StringBuilder content = new StringBuilder();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
-        con.disconnect();
-        return content.toString();
+        java.io.InputStream is = con.getInputStream();
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        String result = s.hasNext() ? s.next() : "";
+        is.close();
+        return result;
+    }
+
+    public List<City> getCities() throws IOException {
+        String json = get("/cities");
+        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
+        City[] cities = JsonUtil.fromJsonArray(json, City[].class);
+        return Arrays.asList(cities);
+    }
+
+    public List<Passenger> getPassengers() throws IOException {
+        String json = get("/passengers");
+        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
+        Passenger[] passengers = JsonUtil.fromJsonArray(json, Passenger[].class);
+        return Arrays.asList(passengers);
+    }
+
+    public List<Aircraft> getAircraft() throws IOException {
+        String json = get("/aircraft");
+        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
+        Aircraft[] aircraft = JsonUtil.fromJsonArray(json, Aircraft[].class);
+        return Arrays.asList(aircraft);
+    }
+
+    public Passenger getPassengerById(long id) throws IOException {
+        String json = get("/passengers/" + id);
+        if (json == null || json.isBlank() || json.equals("null")) return null;
+        return JsonUtil.fromJson(json, Passenger.class);
+    }
+
+    public Aircraft getAircraftById(long id) throws IOException {
+        String json = get("/aircraft/" + id);
+        if (json == null || json.isBlank() || json.equals("null")) return null;
+        return JsonUtil.fromJson(json, Aircraft.class);
     }
 }
+
+
 
