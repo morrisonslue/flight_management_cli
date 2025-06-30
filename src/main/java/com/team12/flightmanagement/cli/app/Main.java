@@ -16,20 +16,20 @@ public class Main {
 
         while (true) {
             System.out.println("\nFlight Management CLI");
-            System.out.println("1. What airports are there in each city?");
-            System.out.println("2. What aircraft has each passenger flown on?");
-            System.out.println("3. What airports do aircraft take off from and land at?");
-            System.out.println("4. What airports have passengers used?");
+            System.out.println("1. What airports are there in each city");
+            System.out.println("2. What aircraft has each passenger flown on");
+            System.out.println("3. What airports do aircraft take off from and land at");
+            System.out.println("4. What airports have passengers used");
             System.out.println("0. Exit");
-            System.out.print("Select an option: ");
+            System.out.print("pick an option: ");
             String choice = scanner.nextLine();
+
             try {
                 switch (choice) {
-                    case "1":
-                        // Airports in each city
+                    case "1": {
                         List<City> cities = apiClient.getCities();
                         if (cities.isEmpty()) {
-                            System.out.println("No cities found.");
+                            System.out.println("no cities found");
                         } else {
                             for (City city : cities) {
                                 System.out.println(city.getName() + ", " + city.getProvince() + ":");
@@ -38,25 +38,26 @@ public class Main {
                                         System.out.println("  - " + airport.getName() + " (" + airport.getCode() + ")");
                                     }
                                 } else {
-                                    System.out.println("  (No airports)");
+                                    System.out.println("  (no airports)");
                                 }
                             }
                         }
                         break;
-                    case "2":
-                        // Aircraft per passenger
+                    }
+
+                    case "2": {
                         List<Passenger> passengers = apiClient.getPassengers();
                         List<Aircraft> aircraftList = apiClient.getAircraft();
                         if (passengers.isEmpty()) {
-                            System.out.println("No passengers found.");
+                            System.out.println("no passengers found");
                         } else {
                             for (Passenger p : passengers) {
-                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has flown on: ");
+                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has flown on ");
                                 List<String> flownAircraft = new ArrayList<>();
                                 for (Aircraft a : aircraftList) {
                                     if (a.getPassengers() != null) {
                                         for (Passenger pax : a.getPassengers()) {
-                                            if (Objects.equals(pax.getId(), p.getId())) {
+                                            if (pax.getId() == p.getId()) {
                                                 flownAircraft.add(a.getType() + " (" + a.getAirlineName() + ")");
                                                 break;
                                             }
@@ -64,21 +65,22 @@ public class Main {
                                     }
                                 }
                                 if (flownAircraft.isEmpty()) {
-                                    System.out.println("No aircraft");
+                                    System.out.println("no aircraft");
                                 } else {
                                     System.out.println(String.join(", ", flownAircraft));
                                 }
                             }
                         }
                         break;
-                    case "3":
-                        // Airports per aircraft
-                        List<Aircraft> aircrafts = apiClient.getAircraft();
-                        if (aircrafts.isEmpty()) {
-                            System.out.println("No aircraft found.");
+                    }
+
+                    case "3": {
+                        List<Aircraft> aircraftList = apiClient.getAircraft();
+                        if (aircraftList.isEmpty()) {
+                            System.out.println("no aircraft found");
                         } else {
-                            for (Aircraft ac : aircrafts) {
-                                System.out.print(ac.getType() + " (" + ac.getAirlineName() + ") uses airports: ");
+                            for (Aircraft ac : aircraftList) {
+                                System.out.print(ac.getType() + " (" + ac.getAirlineName() + ") uses airports ");
                                 if (ac.getAirports() != null && !ac.getAirports().isEmpty()) {
                                     List<String> airportNames = new ArrayList<>();
                                     for (Airport ap : ac.getAirports()) {
@@ -86,57 +88,63 @@ public class Main {
                                     }
                                     System.out.println(String.join(", ", airportNames));
                                 } else {
-                                    System.out.println("No airports");
+                                    System.out.println("no airports");
                                 }
                             }
                         }
                         break;
-                    case "4":
-                        // Airports used by each passenger (aggregate via aircraft)
-                        passengers = apiClient.getPassengers();
-                        aircraftList = apiClient.getAircraft();
+                    }
+
+                    case "4": {
+                        List<Passenger> passengers = apiClient.getPassengers();
+                        List<Aircraft> aircraftList = apiClient.getAircraft();
                         if (passengers.isEmpty()) {
-                            System.out.println("No passengers found.");
+                            System.out.println("no passengers found");
                         } else {
                             for (Passenger p : passengers) {
                                 Set<String> airportNames = new HashSet<>();
                                 for (Aircraft a : aircraftList) {
-                                    boolean passengerOnAircraft = false;
+                                    boolean match = false;
                                     if (a.getPassengers() != null) {
                                         for (Passenger pax : a.getPassengers()) {
-                                            if (Objects.equals(pax.getId(), p.getId())) {
-                                                passengerOnAircraft = true;
+                                            if (pax.getId() == p.getId()) {
+                                                match = true;
                                                 break;
                                             }
                                         }
                                     }
-                                    if (passengerOnAircraft && a.getAirports() != null) {
+                                    if (match && a.getAirports() != null) {
                                         for (Airport ap : a.getAirports()) {
                                             airportNames.add(ap.getName() + " (" + ap.getCode() + ")");
                                         }
                                     }
                                 }
-                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has used airports: ");
+                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has used airports ");
                                 if (airportNames.isEmpty()) {
-                                    System.out.println("No airports");
+                                    System.out.println("no airports");
                                 } else {
                                     System.out.println(String.join(", ", airportNames));
                                 }
                             }
                         }
                         break;
+                    }
+
                     case "0":
-                        System.out.println("Goodbye!");
+                        System.out.println("Exiting");
                         return;
+
                     default:
-                        System.out.println("Invalid choice.");
+                        System.out.println("selection not valid");
                 }
+
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                System.out.println("error - " + e.getMessage());
             }
         }
     }
 }
+
 
 
 

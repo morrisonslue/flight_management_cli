@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 class MainTest {
     @Test
     void testMainDoesNotCrash() {
-        // Just runs main with no args (not a full coverage test)
+        // super basic test we have here
         String[] args = {};
         com.team12.flightmanagement.cli.app.Main.main(args);
     }

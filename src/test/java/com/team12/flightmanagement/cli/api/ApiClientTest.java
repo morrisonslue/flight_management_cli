@@ -17,7 +17,6 @@ class ApiClientTest {
 
     @BeforeEach
     void setUp() {
-        // Mockito.spy to mock protected methods
         apiClient = Mockito.spy(new ApiClient("http://localhost:8080"));
     }
 

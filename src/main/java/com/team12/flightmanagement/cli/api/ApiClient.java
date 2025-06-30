@@ -1,15 +1,12 @@
 package com.team12.flightmanagement.cli.api;
 
 import com.team12.flightmanagement.cli.model.City;
-import com.team12.flightmanagement.cli.model.Airport;
 import com.team12.flightmanagement.cli.model.Passenger;
 import com.team12.flightmanagement.cli.model.Aircraft;
 import com.team12.flightmanagement.cli.util.JsonUtil;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ApiClient {
     private final String apiUrl;
@@ -63,6 +60,7 @@ public class ApiClient {
         return JsonUtil.fromJson(json, Aircraft.class);
     }
 }
+
 
 
 
