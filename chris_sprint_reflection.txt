@@ -1,0 +1,7 @@
+Worked mostly on the CLI for the project. Spent a lot of time getting the menu working and formatting the outputs so it looked decent. Thought that part was going to be the main thing but ended up having to dig into the API too because a bunch of stuff was breaking and not lining up between the front and back end. That took way more time than I expected. Most of the issues came down to mismatched JSON formats and every time I thought I fixed something I broke something else.
+
+Did this sprint with my brother and honestly we work well together. Wasn’t stressful or anything, even when stuff was inexplicably broken. Just kind of annoying that it took so long to figure out what the issue actually was. If we had paid more attention to detail early on it probably would have been smoother.
+
+Java still doesn’t come super naturally to me even though I’ve been picking at it for years it still feels kind of clunky compared to Python or JS. Something I definitely need to improve on. Same goes for using database stuff more confidently.
+
+Overall the sprint was a good challenge. Took longer than planned but I feel like I figured out a lot by the end and would be confident doing something similar to this again now.
