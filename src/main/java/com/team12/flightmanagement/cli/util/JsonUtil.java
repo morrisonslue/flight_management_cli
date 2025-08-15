@@ -17,19 +17,14 @@ public class JsonUtil {
         }
     }
 
-    public static <T> T fromJsonArray(String json, Class<T> clazz) {
+    public static <T> List<T> fromJsonList(String json, Class<T> clazz) {
         try {
-            return mapper.readValue(json, clazz);
+            return mapper.readValue(
+                    json,
+                    mapper.getTypeFactory().constructCollectionType(List.class, clazz)
+            );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse JSON array", e);
-        }
-    }
-
-    public static String toJson(Object obj) {
-        try {
-            return mapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize object to JSON", e);
+            throw new RuntimeException("Failed to parse JSON list", e);
         }
     }
 
@@ -41,6 +36,7 @@ public class JsonUtil {
         }
     }
 }
+
 
 
 

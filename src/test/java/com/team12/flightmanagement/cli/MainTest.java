@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 class MainTest {
     @Test
     void testMainDoesNotCrash() {
-        // super basic test we have here
+        System.setProperty("cli.test", "true");
         String[] args = {};
         com.team12.flightmanagement.cli.app.Main.main(args);
     }
