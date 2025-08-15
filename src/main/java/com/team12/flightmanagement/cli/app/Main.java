@@ -10,9 +10,25 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+
         String apiBase = "http://localhost:8080";
+        if (args != null && args.length > 0 && args[0] != null && !args[0].isBlank()) {
+            apiBase = args[0].trim();
+        } else {
+            String env = System.getenv("BASE_URL");
+            if (env != null && !env.isBlank()) {
+                apiBase = env.trim();
+            }
+        }
+
         ApiClient apiClient = new ApiClient(apiBase);
         Scanner scanner = new Scanner(System.in);
+
+        // test mode
+        if ("true".equalsIgnoreCase(System.getProperty("cli.test"))) {
+            System.out.println("(test mode) starting then exiting without input");
+            return;
+        }
 
         while (true) {
             System.out.println("\nFlight Management CLI");
@@ -27,6 +43,7 @@ public class Main {
             try {
                 switch (choice) {
                     case "1": {
+                        // cities and their airports
                         List<City> cities = apiClient.getCities();
                         if (cities.isEmpty()) {
                             System.out.println("no cities found");
@@ -46,6 +63,7 @@ public class Main {
                     }
 
                     case "2": {
+                        // aircraft each passenger has flown on
                         List<Passenger> passengers = apiClient.getPassengers();
                         List<Aircraft> aircraftList = apiClient.getAircraft();
                         if (passengers.isEmpty()) {
@@ -75,6 +93,7 @@ public class Main {
                     }
 
                     case "3": {
+                        // airports used by each aircraft
                         List<Aircraft> aircraftList = apiClient.getAircraft();
                         if (aircraftList.isEmpty()) {
                             System.out.println("no aircraft found");
@@ -96,6 +115,7 @@ public class Main {
                     }
 
                     case "4": {
+                        // airports that each passenger has used
                         List<Passenger> passengers = apiClient.getPassengers();
                         List<Aircraft> aircraftList = apiClient.getAircraft();
                         if (passengers.isEmpty()) {
@@ -144,6 +164,8 @@ public class Main {
         }
     }
 }
+
+
 
 
 

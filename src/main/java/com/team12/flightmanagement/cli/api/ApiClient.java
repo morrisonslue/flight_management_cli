@@ -6,46 +6,61 @@ import com.team12.flightmanagement.cli.model.Aircraft;
 import com.team12.flightmanagement.cli.util.JsonUtil;
 
 import java.io.IOException;
-import java.util.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
 
 public class ApiClient {
     private final String apiUrl;
+    private final HttpClient http;
 
     public ApiClient(String apiUrl) {
         this.apiUrl = apiUrl;
+        this.http = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
+                .build();
     }
 
     protected String get(String path) throws IOException {
-        java.net.URL url = new java.net.URL(apiUrl + path);
-        java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Accept", "application/json");
-        java.io.InputStream is = con.getInputStream();
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        String result = s.hasNext() ? s.next() : "";
-        is.close();
-        return result;
+        try {
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl + path))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+            int code = res.statusCode();
+            if (code >= 200 && code < 300) {
+                return res.body();
+            } else {
+                throw new IOException("http " + code + " for " + path);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("request interrupted", e);
+        }
     }
 
-    public List<City> getCities() throws IOException {
-        String json = get("/cities");
-        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
-        City[] cities = JsonUtil.fromJsonArray(json, City[].class);
-        return Arrays.asList(cities);
-    }
-
-    public List<Passenger> getPassengers() throws IOException {
-        String json = get("/passengers");
-        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
-        Passenger[] passengers = JsonUtil.fromJsonArray(json, Passenger[].class);
-        return Arrays.asList(passengers);
-    }
-
+    // /aircraft
     public List<Aircraft> getAircraft() throws IOException {
         String json = get("/aircraft");
-        if (json == null || json.isBlank() || json.equals("null")) return Collections.emptyList();
-        Aircraft[] aircraft = JsonUtil.fromJsonArray(json, Aircraft[].class);
-        return Arrays.asList(aircraft);
+        return JsonUtil.fromJsonList(json, Aircraft.class);
+    }
+
+    // /cities
+    public List<City> getCities() throws IOException {
+        String json = get("/cities");
+        return JsonUtil.fromJsonList(json, City.class);
+    }
+
+    // passengers
+    public List<Passenger> getPassengers() throws IOException {
+        String json = get("/passengers");
+        return JsonUtil.fromJsonList(json, Passenger.class);
     }
 
     public Passenger getPassengerById(long id) throws IOException {
@@ -60,7 +75,6 @@ public class ApiClient {
         return JsonUtil.fromJson(json, Aircraft.class);
     }
 }
-
 
 
 
