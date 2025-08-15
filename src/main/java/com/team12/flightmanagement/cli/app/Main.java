@@ -10,7 +10,7 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-
+        // NOTE TO SELF!!! base url can come from command line or env or default
         String apiBase = "http://localhost:8080";
         if (args != null && args.length > 0 && args[0] != null && !args[0].isBlank()) {
             apiBase = args[0].trim();
@@ -64,28 +64,37 @@ public class Main {
 
                     case "2": {
                         // aircraft each passenger has flown on
-                        List<Passenger> passengers = apiClient.getPassengers();
-                        List<Aircraft> aircraftList = apiClient.getAircraft();
-                        if (passengers.isEmpty()) {
-                            System.out.println("no passengers found");
-                        } else {
-                            for (Passenger p : passengers) {
-                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has flown on ");
-                                List<String> flownAircraft = new ArrayList<>();
-                                for (Aircraft a : aircraftList) {
-                                    if (a.getPassengers() != null) {
-                                        for (Passenger pax : a.getPassengers()) {
-                                            if (pax.getId() == p.getId()) {
-                                                flownAircraft.add(a.getType() + " (" + a.getAirlineName() + ")");
-                                                break;
-                                            }
-                                        }
-                                    }
+
+                        List<Map<String, Object>> acWithPassengers = apiClient.getAircraftWithPassengers();
+
+                        // build passenger -> list of aircraft strings
+                        Map<String, List<String>> byPassenger = new LinkedHashMap<>();
+                        for (Map<String, Object> row : acWithPassengers) {
+                            String type = Objects.toString(row.get("type"), "");
+                            String airline = Objects.toString(row.get("airlineName"), "");
+                            String aircraftLabel = type + (airline.isBlank() ? "" : " (" + airline + ")");
+
+                            @SuppressWarnings("unchecked")
+                            List<String> names = (List<String>) row.get("passengers");
+                            if (names != null) {
+                                for (String name : names) {
+                                    if (name == null || name.isBlank()) continue;
+                                    byPassenger.computeIfAbsent(name, k -> new ArrayList<>()).add(aircraftLabel);
                                 }
-                                if (flownAircraft.isEmpty()) {
+                            }
+                        }
+
+                        if (byPassenger.isEmpty()) {
+                            System.out.println("no data");
+                        } else {
+                            for (Map.Entry<String, List<String>> e : byPassenger.entrySet()) {
+                                String name = e.getKey();
+                                List<String> aircraftList = e.getValue();
+                                System.out.print(name + " has flown on ");
+                                if (aircraftList == null || aircraftList.isEmpty()) {
                                     System.out.println("no aircraft");
                                 } else {
-                                    System.out.println(String.join(", ", flownAircraft));
+                                    System.out.println(String.join(", ", aircraftList));
                                 }
                             }
                         }
@@ -93,21 +102,23 @@ public class Main {
                     }
 
                     case "3": {
-                        // airports used by each aircraft
-                        List<Aircraft> aircraftList = apiClient.getAircraft();
-                        if (aircraftList.isEmpty()) {
+                        // airports used by each plane for flights
+
+                        List<Map<String, Object>> acWithAirports = apiClient.getAircraftWithAirports();
+                        if (acWithAirports.isEmpty()) {
                             System.out.println("no aircraft found");
                         } else {
-                            for (Aircraft ac : aircraftList) {
-                                System.out.print(ac.getType() + " (" + ac.getAirlineName() + ") uses airports ");
-                                if (ac.getAirports() != null && !ac.getAirports().isEmpty()) {
-                                    List<String> airportNames = new ArrayList<>();
-                                    for (Airport ap : ac.getAirports()) {
-                                        airportNames.add(ap.getName() + " (" + ap.getCode() + ")");
-                                    }
-                                    System.out.println(String.join(", ", airportNames));
-                                } else {
+                            for (Map<String, Object> row : acWithAirports) {
+                                String type = Objects.toString(row.get("type"), "");
+                                String airline = Objects.toString(row.get("airlineName"), "");
+                                @SuppressWarnings("unchecked")
+                                List<String> codes = (List<String>) row.get("airports");
+
+                                System.out.print(type + (airline.isBlank() ? "" : " (" + airline + ")") + " uses airports ");
+                                if (codes == null || codes.isEmpty()) {
                                     System.out.println("no airports");
+                                } else {
+                                    System.out.println(String.join(", ", codes));
                                 }
                             }
                         }
@@ -115,35 +126,22 @@ public class Main {
                     }
 
                     case "4": {
-                        // airports that each passenger has used
-                        List<Passenger> passengers = apiClient.getPassengers();
-                        List<Aircraft> aircraftList = apiClient.getAircraft();
-                        if (passengers.isEmpty()) {
+                        // airports that each passenger has used (GET /passengers-with-airports)
+
+                        List<Map<String, Object>> paxWithAirports = apiClient.getPassengersWithAirports();
+                        if (paxWithAirports.isEmpty()) {
                             System.out.println("no passengers found");
                         } else {
-                            for (Passenger p : passengers) {
-                                Set<String> airportNames = new HashSet<>();
-                                for (Aircraft a : aircraftList) {
-                                    boolean match = false;
-                                    if (a.getPassengers() != null) {
-                                        for (Passenger pax : a.getPassengers()) {
-                                            if (pax.getId() == p.getId()) {
-                                                match = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (match && a.getAirports() != null) {
-                                        for (Airport ap : a.getAirports()) {
-                                            airportNames.add(ap.getName() + " (" + ap.getCode() + ")");
-                                        }
-                                    }
-                                }
-                                System.out.print(p.getFirstName() + " " + p.getLastName() + " has used airports ");
-                                if (airportNames.isEmpty()) {
+                            for (Map<String, Object> row : paxWithAirports) {
+                                String fullName = Objects.toString(row.get("passenger"), "");
+                                @SuppressWarnings("unchecked")
+                                List<String> names = (List<String>) row.get("airports");
+
+                                System.out.print(fullName + " has used airports ");
+                                if (names == null || names.isEmpty()) {
                                     System.out.println("no airports");
                                 } else {
-                                    System.out.println(String.join(", ", airportNames));
+                                    System.out.println(String.join(", ", names));
                                 }
                             }
                         }
@@ -164,6 +162,7 @@ public class Main {
         }
     }
 }
+
 
 
 
