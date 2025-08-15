@@ -12,6 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 public class ApiClient {
     private final String apiUrl;
@@ -24,6 +25,7 @@ public class ApiClient {
                 .build();
     }
 
+
     protected String get(String path) throws IOException {
         try {
             HttpRequest req = HttpRequest.newBuilder()
@@ -31,7 +33,6 @@ public class ApiClient {
                     .timeout(Duration.ofSeconds(10))
                     .GET()
                     .build();
-
             HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
             int code = res.statusCode();
             if (code >= 200 && code < 300) {
@@ -45,13 +46,14 @@ public class ApiClient {
         }
     }
 
-    // /aircraft
+
+    // aircraft
     public List<Aircraft> getAircraft() throws IOException {
         String json = get("/aircraft");
         return JsonUtil.fromJsonList(json, Aircraft.class);
     }
 
-    // /cities
+    // cities
     public List<City> getCities() throws IOException {
         String json = get("/cities");
         return JsonUtil.fromJsonList(json, City.class);
@@ -62,6 +64,27 @@ public class ApiClient {
         String json = get("/passengers");
         return JsonUtil.fromJsonList(json, Passenger.class);
     }
+
+
+
+    // aircraft with passsengers
+    public List<Map<String, Object>> getAircraftWithPassengers() throws IOException {
+        String json = get("/aircraft-with-passengers");
+        return JsonUtil.fromJsonListOfMaps(json);
+    }
+
+    // aircraft with airports
+    public List<Map<String, Object>> getAircraftWithAirports() throws IOException {
+        String json = get("/aircraft-with-airports");
+        return JsonUtil.fromJsonListOfMaps(json);
+    }
+
+    // passengers with airports
+    public List<Map<String, Object>> getPassengersWithAirports() throws IOException {
+        String json = get("/passengers-with-airports");
+        return JsonUtil.fromJsonListOfMaps(json);
+    }
+
 
     public Passenger getPassengerById(long id) throws IOException {
         String json = get("/passengers/" + id);
@@ -75,6 +98,7 @@ public class ApiClient {
         return JsonUtil.fromJson(json, Aircraft.class);
     }
 }
+
 
 
 
